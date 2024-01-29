@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FFMPEG Task</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            border-width: 0;
+            padding: 2rem;
+
+            font-size: 16px;
+        }
+
+        body {
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            border-width: 1px;
+            padding: 2rem;
+
+            border-style: solid;
+            border-color: #c3c3c3;
+            border-radius: 2px;
+        }
+    </style>
+    <style>
+        .NewTask {
+        }
+
+        .NewTask .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .NewTask .input-group:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="NewTask">
+    <div class="input-group">
+        <label class="input-group-text" for="inputWorkFolder">输入工作目录</label>
+        <input
+                type="text"
+                class="form-control"
+                id="inputWorkFolder"
+                aria-describedby="inputWorkFolder"
+                aria-label="Upload"
+                onchange="inputWorkFolder()">
+    </div>
+
+    <div class="input-group">
+        <label class="input-group-text" for="chooseVideoFolder">选择视频文件夹</label>
+        <input
+                disabled
+                type="file"
+                class="form-control"
+                id="chooseVideoFolder"
+                aria-describedby="chooseVideoFolder"
+                aria-label="Upload"
+                webkitdirectory
+                onchange="chooseVideoFolder()">
+    </div>
+
+    <div class="input-group">
+        <label class="input-group-text" for="chooseSubtitleFolder">选择字幕文件夹</label>
+        <input
+                disabled
+                type="file"
+                class="form-control"
+                id="chooseSubtitleFolder"
+                aria-describedby="chooseSubtitleFolder"
+                aria-label="Upload"
+                webkitdirectory
+                onchange="chooseSubtitleFolder()">
+    </div>
+
+    <div class="input-group">
+        <button type="button" class="btn btn-primary" onclick="parseTask()">解析任务</button>
+        <button type="button" class="btn btn-primary" onclick="submitTask()">提交任务</button>
+    </div>
+</div>
+
+<div class="TaskList">
+    <table border="">
+        <thead>
+        <tr>
+            <td>视频文件名</td>
+            <td>字幕文件名</td>
+
+            <td>视频 音频轨道 0</td>
+            <td>视频 音频轨道 1</td>
+            <td>视频 音频轨道 2</td>
+            <td>视频 音频轨道 3</td>
+
+            <td>视频 字幕轨道 0</td>
+            <td>视频 字幕轨道 1</td>
+            <td>视频 字幕轨道 2</td>
+            <td>视频 字幕轨道 3</td>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+<script>
+    let work_folder = ""
+    let video_files = []
+    let subtitle_files = []
+
+    const axios_instance = axios.create({
+        baseURL: 'http://127.0.0.1:8888',
+        timeout: 1000,
+        headers: {'X-Custom-Header': 'foobar'}
+    })
+</script>
+
+<script>
+    function inputWorkFolder() {
+        const el = document.getElementById("inputWorkFolder")
+
+        work_folder = el.value
+
+        if (work_folder) {
+            document.getElementById("chooseVideoFolder").removeAttribute("disabled")
+            document.getElementById("chooseSubtitleFolder").removeAttribute("disabled")
+        } else {
+            document.getElementById("chooseVideoFolder").setAttribute("disabled", "disabled")
+            document.getElementById("chooseSubtitleFolder").setAttribute("disabled", "disabled")
+        }
+    }
+
+    function chooseVideoFolder() {
+        video_files.splice(0, video_files.length)
+
+        const el = document.getElementById("chooseVideoFolder")
+
+        for (let file of el.files) {
+            video_files.push(file.webkitRelativePath)
+        }
+    }
+
+    function chooseSubtitleFolder() {
+        subtitle_files.splice(0, subtitle_files.length)
+
+        const el = document.getElementById("chooseSubtitleFolder")
+
+        for (let file of el.files) {
+            subtitle_files.push(file.webkitRelativePath)
+        }
+    }
+
+    async function parseTask() {
+        console.log(video_files)
+        console.log(subtitle_files)
+
+        const payload = {
+            work_folder: work_folder,
+            video_files: video_files,
+            subtitle_files: subtitle_files,
+
+        }
+
+        response = await axios_instance.post('/api/parse_task', payload)
+        console.log(response)
+    }
+
+    async function submitTask() {}
+</script>
+
+<script>
+    window.onload = function () {
+        document.getElementById("inputWorkFolder").value = ""
+        inputWorkFolder()
+    }
+</script>
+</body>
+</html>
